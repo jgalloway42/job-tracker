@@ -1,6 +1,7 @@
 """Page 4 — Reports and analytics."""
 
 import datetime
+import os
 
 import plotly.express as px
 import streamlit as st
@@ -94,6 +95,11 @@ def main() -> None:
     _render_status_chart()
     st.divider()
     _render_source_chart()
+
+    with st.sidebar:
+        st.divider()
+        if st.button("Exit App", use_container_width=True):
+            os._exit(0)  # pylint: disable=protected-access
 
 
 main()

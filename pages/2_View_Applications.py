@@ -2,6 +2,7 @@
 
 import datetime
 import math
+import os
 
 import pandas as pd
 import streamlit as st
@@ -117,6 +118,10 @@ def main() -> None:
     page_num = st.selectbox("Page", range(1, total_pages + 1), index=0)
     page_apps = filtered[(page_num - 1) * PAGE_SIZE : page_num * PAGE_SIZE]
     _render_table(page_apps)
+
+    st.sidebar.divider()
+    if st.sidebar.button("Exit App", use_container_width=True):
+        os._exit(0)  # pylint: disable=protected-access
 
 
 main()

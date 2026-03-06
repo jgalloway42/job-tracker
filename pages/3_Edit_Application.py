@@ -2,6 +2,8 @@
 
 # pylint: disable=duplicate-code  # Application() kwargs mirror 1_Add_Application.py by design
 
+import os
+
 import streamlit as st
 
 from app.config import APP_ICON, APP_TITLE, DB_PATH
@@ -88,6 +90,11 @@ def main() -> None:
 
     st.caption(f"Editing ID {app.id} — created {app.created_at}")
     _show_form(app)
+
+    with st.sidebar:
+        st.divider()
+        if st.button("Exit App", use_container_width=True):
+            os._exit(0)  # pylint: disable=protected-access
 
 
 main()

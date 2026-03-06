@@ -3,6 +3,7 @@
 # pylint: disable=duplicate-code  # Application() kwargs mirror 3_Edit_Application.py by design
 
 import datetime
+import os
 
 import streamlit as st
 
@@ -95,6 +96,11 @@ def main() -> None:
         _show_confirm()
     else:
         _show_form()
+
+    with st.sidebar:
+        st.divider()
+        if st.button("Exit App", use_container_width=True):
+            os._exit(0)  # pylint: disable=protected-access
 
 
 main()

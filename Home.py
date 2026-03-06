@@ -1,5 +1,7 @@
 """Home page — dashboard for the Job Application Tracker."""
 
+import os
+
 import streamlit as st
 
 from app.config import APP_ICON, APP_TITLE, DB_PATH
@@ -29,6 +31,11 @@ def main() -> None:
     col2.metric("Active Pipeline", len(active))
     col3.metric("Offers Received", offers)
     col4.metric("Response Rate", f"{response_rate}%")
+
+    with st.sidebar:
+        st.divider()
+        if st.button("Exit App", use_container_width=True):
+            os._exit(0)  # pylint: disable=protected-access
 
 
 main()
