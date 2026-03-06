@@ -101,6 +101,16 @@ def test_add_application_sets_archived_for_terminal_status(db):
     assert row[0] == 1
 
 
+def test_add_application_trims_whitespace(db):
+    """Leading/trailing whitespace in company and job_title must be stripped on insert."""
+    app_id = add_application(
+        make_app(company="  Acme  ", job_title="  Engineer  "), db
+    )
+    saved = [a for a in get_all(db) if a.id == app_id][0]
+    assert saved.company == "Acme"
+    assert saved.job_title == "Engineer"
+
+
 # ── 4c: get_all ───────────────────────────────────────────────────────────────
 
 

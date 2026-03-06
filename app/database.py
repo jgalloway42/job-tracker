@@ -63,13 +63,13 @@ def add_application(app: Application, db_path: str) -> int:
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                app.company,
-                app.job_title,
+                app.company.strip(),
+                app.job_title.strip(),
                 app.date_applied.isoformat(),
                 app.status.value,
                 app.source.value,
-                app.job_url,
-                app.notes,
+                app.job_url.strip(),
+                app.notes.strip(),
                 int(app.archived),
                 now,
                 now,
@@ -137,13 +137,13 @@ def update_application(app: Application, db_path: str) -> None:
             WHERE id = ?
             """,
             (
-                app.company,
-                app.job_title,
+                app.company.strip(),
+                app.job_title.strip(),
                 app.date_applied.isoformat(),
                 app.status.value,
                 app.source.value,
-                app.job_url,
-                app.notes,
+                app.job_url.strip(),
+                app.notes.strip(),
                 archived,
                 now,
                 app.id,
@@ -158,9 +158,10 @@ def find_duplicates(db_path: str) -> list[tuple[Application, Application]]:
     """
     with _connect(db_path) as conn:
         groups = conn.execute("""
-            SELECT LOWER(company) AS company_key, LOWER(job_title) AS title_key
+            SELECT LOWER(TRIM(company)) AS company_key,
+                   LOWER(TRIM(job_title)) AS title_key
             FROM applications
-            GROUP BY LOWER(company), LOWER(job_title)
+            GROUP BY LOWER(TRIM(company)), LOWER(TRIM(job_title))
             HAVING COUNT(*) > 1
             """).fetchall()
 
@@ -169,7 +170,7 @@ def find_duplicates(db_path: str) -> list[tuple[Application, Application]]:
             rows = conn.execute(
                 """
                 SELECT * FROM applications
-                WHERE LOWER(company) = ? AND LOWER(job_title) = ?
+                WHERE LOWER(TRIM(company)) = ? AND LOWER(TRIM(job_title)) = ?
                 ORDER BY date_applied ASC, created_at ASC
                 """,
                 (group["company_key"], group["title_key"]),
