@@ -1,0 +1,12 @@
+[MESSAGES CONTROL]
+
+[FORMAT]
+max-line-length=88
+
+[BASIC]
+good-names=df,id
+module-naming-style=any
+
+[DESIGN]
+max-attributes=12
+min-public-methods=1
