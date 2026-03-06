@@ -136,6 +136,7 @@ celerybeat.pid
 
 # Project-specific
 jobs.db
+local.db
 
 # Environments
 .env
