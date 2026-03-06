@@ -1,5 +1,7 @@
 """Page 4 — Reports and analytics."""
 
+# pylint: disable=duplicate-code  # sidebar exit button is intentionally identical across all pages
+
 import datetime
 import os
 

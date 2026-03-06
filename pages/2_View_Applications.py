@@ -1,5 +1,7 @@
 """Page 2 — View and query job applications."""
 
+# pylint: disable=duplicate-code  # sidebar exit button is intentionally identical across all pages
+
 import datetime
 import math
 import os

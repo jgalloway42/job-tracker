@@ -1,5 +1,7 @@
 """Home page — dashboard for the Job Application Tracker."""
 
+# pylint: disable=duplicate-code  # sidebar exit button is intentionally identical across all pages
+
 import os
 
 import streamlit as st
