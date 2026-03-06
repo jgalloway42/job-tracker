@@ -257,6 +257,17 @@ def test_find_duplicates_unique_record_not_in_results(db):
     assert "UniqueCo" not in all_companies
 
 
+def test_find_duplicates_case_insensitive(db):
+    """Duplicate detection must be case-insensitive for company and job_title."""
+    add_application(
+        make_app(company="dupco", job_title="dev", date_applied=date(2025, 1, 1)), db
+    )
+    add_application(
+        make_app(company="DupCo", job_title="Dev", date_applied=date(2025, 2, 1)), db
+    )
+    assert len(find_duplicates(db)) == 1
+
+
 # ── 4h: delete_application ────────────────────────────────────────────────────
 
 

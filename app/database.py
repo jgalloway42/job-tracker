@@ -158,8 +158,9 @@ def find_duplicates(db_path: str) -> list[tuple[Application, Application]]:
     """
     with _connect(db_path) as conn:
         groups = conn.execute("""
-            SELECT company, job_title FROM applications
-            GROUP BY company, job_title
+            SELECT LOWER(company) AS company_key, LOWER(job_title) AS title_key
+            FROM applications
+            GROUP BY LOWER(company), LOWER(job_title)
             HAVING COUNT(*) > 1
             """).fetchall()
 
@@ -168,10 +169,10 @@ def find_duplicates(db_path: str) -> list[tuple[Application, Application]]:
             rows = conn.execute(
                 """
                 SELECT * FROM applications
-                WHERE company = ? AND job_title = ?
+                WHERE LOWER(company) = ? AND LOWER(job_title) = ?
                 ORDER BY date_applied ASC, created_at ASC
                 """,
-                (group["company"], group["job_title"]),
+                (group["company_key"], group["title_key"]),
             ).fetchall()
             apps = [_row_to_application(r) for r in rows]
             for newer in apps[1:]:
