@@ -15,6 +15,7 @@ from app.database import (
     get_by_date_range,
     get_by_status,
     init_db,
+    resolve_duplicates,
     update_application,
 )
 from app.models import Application, Source, Status
@@ -268,3 +269,56 @@ def test_delete_application_removes_record(db):
             "SELECT id FROM applications WHERE id = ?", (app_id,)
         ).fetchone()
     assert row is None
+
+
+# ── Step 8: resolve_duplicates ────────────────────────────────────────────────
+
+
+def test_resolve_duplicates_no_pairs_exits_early(db, capsys):
+    """resolve_duplicates with no duplicates must print count and return."""
+    add_application(make_app(company="UniqueA", job_title="Dev"), db)
+    resolve_duplicates(db)
+    output = capsys.readouterr().out
+    assert "0" in output
+
+
+def test_resolve_duplicates_yes_deletes_newer(db, monkeypatch):
+    """Answering 'y' must delete the newer duplicate and keep the oldest."""
+    oldest_id = add_application(
+        make_app(company="DupCo", job_title="Dev", date_applied=date(2025, 1, 1)), db
+    )
+    newer_id = add_application(
+        make_app(company="DupCo", job_title="Dev", date_applied=date(2025, 2, 1)), db
+    )
+    monkeypatch.setattr("builtins.input", lambda _: "y")
+    resolve_duplicates(db)
+    all_ids = [a.id for a in get_all(db, include_archived=True)]
+    assert oldest_id in all_ids
+    assert newer_id not in all_ids
+
+
+def test_resolve_duplicates_no_leaves_records(db, monkeypatch):
+    """Answering 'n' must leave all records untouched."""
+    add_application(
+        make_app(company="DupCo", job_title="Dev", date_applied=date(2025, 1, 1)), db
+    )
+    add_application(
+        make_app(company="DupCo", job_title="Dev", date_applied=date(2025, 2, 1)), db
+    )
+    monkeypatch.setattr("builtins.input", lambda _: "n")
+    resolve_duplicates(db)
+    assert len(get_all(db, include_archived=True)) == 2
+
+
+def test_resolve_duplicates_output_includes_pair_count(db, capsys, monkeypatch):
+    """stdout must mention the number of duplicate pairs found."""
+    add_application(
+        make_app(company="DupCo", job_title="Dev", date_applied=date(2025, 1, 1)), db
+    )
+    add_application(
+        make_app(company="DupCo", job_title="Dev", date_applied=date(2025, 2, 1)), db
+    )
+    monkeypatch.setattr("builtins.input", lambda _: "n")
+    resolve_duplicates(db)
+    output = capsys.readouterr().out
+    assert "1" in output

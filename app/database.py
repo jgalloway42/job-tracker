@@ -184,3 +184,34 @@ def delete_application(app_id: int, db_path: str) -> None:
     """Hard delete a record by id."""
     with _connect(db_path) as conn:
         conn.execute("DELETE FROM applications WHERE id = ?", (app_id,))
+
+
+def resolve_duplicates(db_path: str) -> None:
+    """Interactive CLI to review and optionally delete duplicate applications.
+
+    Prints a table of duplicate pairs, then prompts the user to delete the
+    newer record in each pair.  Responds only to an exact 'y' — anything
+    else is treated as 'no'.
+    """
+    pairs = find_duplicates(db_path)
+    n = len(pairs)
+    print(f"Found {n} duplicate pair(s).")
+
+    if n == 0:
+        return
+
+    for i, (oldest, newer) in enumerate(pairs, start=1):
+        print(
+            f"  Pair {i}: [{oldest.id}] {oldest.company} / {oldest.job_title}"
+            f" ({oldest.date_applied})"
+            f"  vs  [{newer.id}] {newer.company} / {newer.job_title}"
+            f" ({newer.date_applied})"
+        )
+
+    answer = input(f"Found {n} duplicate pairs. Delete newer duplicates? [y/N]: ")
+    if answer.strip().lower() == "y":
+        for _oldest, newer in pairs:
+            delete_application(newer.id, db_path)
+            print(f"  Deleted application id={newer.id}.")
+    else:
+        print("No changes made.")
