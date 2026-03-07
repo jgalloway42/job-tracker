@@ -89,6 +89,12 @@ class ViewApplicationsPage(BasePage):
     def _body(self) -> None:
         st.title("View Applications")
 
+        st.markdown(
+            "<style>[data-baseweb='tag']{"
+            "background-color:rgb(66,111,245)!important}</style>",
+            unsafe_allow_html=True,
+        )
+
         st.sidebar.header("Filters")
         show_archived = st.sidebar.toggle("Show Archived", value=False)
 
@@ -119,7 +125,8 @@ class ViewApplicationsPage(BasePage):
         _render_csv_download(filtered)
 
         total_pages = max(1, math.ceil(len(filtered) / PAGE_SIZE))
-        page_num = st.selectbox("Page", range(1, total_pages + 1), index=0)
+        page_col, _ = st.columns([1, 5])
+        page_num = page_col.selectbox("Page", range(1, total_pages + 1), index=0)
         page_apps = filtered[(page_num - 1) * PAGE_SIZE : page_num * PAGE_SIZE]
         _render_table(page_apps)
 
