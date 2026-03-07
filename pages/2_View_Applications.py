@@ -107,8 +107,12 @@ class ViewApplicationsPage(BasePage):
         )  # type: ignore[assignment]
 
         all_apps = get_all(DB_PATH, include_archived=show_archived)
-        filtered = _apply_filters(
-            all_apps, selected_statuses, selected_sources, start_date, end_date
+        filtered = sorted(
+            _apply_filters(
+                all_apps, selected_statuses, selected_sources, start_date, end_date
+            ),
+            key=lambda a: a.date_applied,
+            reverse=True,
         )
 
         st.write(f"**{len(filtered)}** application(s) found.")
