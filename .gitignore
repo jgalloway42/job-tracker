@@ -138,6 +138,7 @@ celerybeat.pid
 jobs.db
 local.db
 .reports/
+CLAUDE.md
 
 # Environments
 .env
