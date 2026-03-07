@@ -1,15 +1,13 @@
 """Page 4 — Reports and analytics."""
 
-# pylint: disable=duplicate-code  # sidebar exit button is intentionally identical across all pages
-
 import datetime
-import os
 
 import plotly.express as px
 import streamlit as st
 
-from app.config import APP_ICON, APP_TITLE, DB_PATH
-from app.database import get_all, init_db
+from app.base_page import BasePage
+from app.config import DB_PATH
+from app.database import get_all
 from app.reports import (
     applications_per_week,
     source_breakdown,
@@ -86,22 +84,19 @@ def _render_source_chart() -> None:
     st.plotly_chart(fig, use_container_width=True)
 
 
-def main() -> None:
-    """Render the Reports page."""
-    st.set_page_config(page_title=f"Reports — {APP_TITLE}", page_icon=APP_ICON)
-    init_db(DB_PATH)
-    st.title("Reports")
+class ReportsPage(BasePage):
+    """Page for analytics and reporting charts."""
 
-    _render_weekly_chart()
-    st.divider()
-    _render_status_chart()
-    st.divider()
-    _render_source_chart()
+    subtitle = "Reports"
 
-    with st.sidebar:
+    def _body(self) -> None:
+        st.title("Reports")
+
+        _render_weekly_chart()
         st.divider()
-        if st.button("Exit App", use_container_width=True):
-            os._exit(0)  # pylint: disable=protected-access
+        _render_status_chart()
+        st.divider()
+        _render_source_chart()
 
 
-main()
+ReportsPage().run()

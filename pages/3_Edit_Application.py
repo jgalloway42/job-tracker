@@ -2,12 +2,11 @@
 
 # pylint: disable=duplicate-code  # Application() kwargs mirror 1_Add_Application.py by design
 
-import os
-
 import streamlit as st
 
-from app.config import APP_ICON, APP_TITLE, DB_PATH
-from app.database import get_all, init_db, update_application
+from app.base_page import BasePage
+from app.config import DB_PATH
+from app.database import get_all, update_application
 from app.models import Application, Source, Status
 
 
@@ -68,33 +67,30 @@ def _show_form(app: Application) -> None:
         st.switch_page("pages/2_View_Applications.py")
 
 
-def main() -> None:
-    """Render the Edit Application page."""
-    st.set_page_config(page_title=f"Edit Application — {APP_TITLE}", page_icon=APP_ICON)
-    init_db(DB_PATH)
-    st.title("Edit Application")
+class EditApplicationPage(BasePage):
+    """Page for editing an existing job application."""
 
-    if "edit_app_id" not in st.session_state:
-        st.info("No application selected.")
-        if st.button("← Back to View"):
-            st.switch_page("pages/2_View_Applications.py")
-        return
+    subtitle = "Edit Application"
 
-    app_id: int = st.session_state["edit_app_id"]
-    app = _get_application(app_id)
+    def _body(self) -> None:
+        st.title("Edit Application")
 
-    if app is None:
-        st.error(f"Application ID {app_id} not found.")
-        del st.session_state["edit_app_id"]
-        return
+        if "edit_app_id" not in st.session_state:
+            st.info("No application selected.")
+            if st.button("← Back to View"):
+                st.switch_page("pages/2_View_Applications.py")
+            return
 
-    st.caption(f"Editing ID {app.id} — created {app.created_at}")
-    _show_form(app)
+        app_id: int = st.session_state["edit_app_id"]
+        app = _get_application(app_id)
 
-    with st.sidebar:
-        st.divider()
-        if st.button("Exit App", use_container_width=True):
-            os._exit(0)  # pylint: disable=protected-access
+        if app is None:
+            st.error(f"Application ID {app_id} not found.")
+            del st.session_state["edit_app_id"]
+            return
+
+        st.caption(f"Editing ID {app.id} — created {app.created_at}")
+        _show_form(app)
 
 
-main()
+EditApplicationPage().run()

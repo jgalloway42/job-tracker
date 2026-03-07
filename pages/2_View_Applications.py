@@ -1,16 +1,14 @@
 """Page 2 — View and query job applications."""
 
-# pylint: disable=duplicate-code  # sidebar exit button is intentionally identical across all pages
-
 import datetime
 import math
-import os
 
 import pandas as pd
 import streamlit as st
 
-from app.config import APP_ICON, APP_TITLE, DB_PATH, PAGE_SIZE
-from app.database import get_all, init_db
+from app.base_page import BasePage
+from app.config import DB_PATH, PAGE_SIZE
+from app.database import get_all
 from app.models import ARCHIVED_STATUSES, Application, Source, Status
 from app.reports import to_dataframe
 
@@ -66,8 +64,8 @@ def _render_table(apps: list[Application]) -> None:
 
     header_cols = st.columns(_COL_WIDTHS)
     for col, header in zip(header_cols, _COL_HEADERS):
-        col.markdown(f"**{header}**")
-    st.divider()
+        if header:
+            col.markdown(f"<u>**{header}**</u>", unsafe_allow_html=True)
 
     for app in apps:
         row = st.columns(_COL_WIDTHS)
@@ -83,47 +81,43 @@ def _render_table(apps: list[Application]) -> None:
             st.switch_page("pages/3_Edit_Application.py")
 
 
-def main() -> None:
-    """Render the View Applications page."""
-    st.set_page_config(
-        page_title=f"View Applications — {APP_TITLE}", page_icon=APP_ICON
-    )
-    init_db(DB_PATH)
-    st.title("View Applications")
+class ViewApplicationsPage(BasePage):
+    """Page for browsing and filtering job applications."""
 
-    st.sidebar.header("Filters")
-    show_archived = st.sidebar.toggle("Show Archived", value=False)
+    subtitle = "View Applications"
 
-    default_statuses = [s.value for s in Status if s not in ARCHIVED_STATUSES]
-    selected_statuses = st.sidebar.multiselect(
-        "Status", [s.value for s in Status], default=default_statuses
-    )
-    selected_sources = st.sidebar.multiselect(
-        "Source", [s.value for s in Source], default=[s.value for s in Source]
-    )
-    start_date: datetime.date = st.sidebar.date_input(
-        "From", value=datetime.date(2000, 1, 1)
-    )  # type: ignore[assignment]
-    end_date: datetime.date = st.sidebar.date_input(
-        "To", value=datetime.date.today()
-    )  # type: ignore[assignment]
+    def _body(self) -> None:
+        st.title("View Applications")
 
-    all_apps = get_all(DB_PATH, include_archived=show_archived)
-    filtered = _apply_filters(
-        all_apps, selected_statuses, selected_sources, start_date, end_date
-    )
+        st.sidebar.header("Filters")
+        show_archived = st.sidebar.toggle("Show Archived", value=False)
 
-    st.write(f"**{len(filtered)}** application(s) found.")
-    _render_csv_download(filtered)
+        default_statuses = [s.value for s in Status if s not in ARCHIVED_STATUSES]
+        selected_statuses = st.sidebar.multiselect(
+            "Status", [s.value for s in Status], default=default_statuses
+        )
+        selected_sources = st.sidebar.multiselect(
+            "Source", [s.value for s in Source], default=[s.value for s in Source]
+        )
+        start_date: datetime.date = st.sidebar.date_input(
+            "From", value=datetime.date(2000, 1, 1)
+        )  # type: ignore[assignment]
+        end_date: datetime.date = st.sidebar.date_input(
+            "To", value=datetime.date.today()
+        )  # type: ignore[assignment]
 
-    total_pages = max(1, math.ceil(len(filtered) / PAGE_SIZE))
-    page_num = st.selectbox("Page", range(1, total_pages + 1), index=0)
-    page_apps = filtered[(page_num - 1) * PAGE_SIZE : page_num * PAGE_SIZE]
-    _render_table(page_apps)
+        all_apps = get_all(DB_PATH, include_archived=show_archived)
+        filtered = _apply_filters(
+            all_apps, selected_statuses, selected_sources, start_date, end_date
+        )
 
-    st.sidebar.divider()
-    if st.sidebar.button("Exit App", use_container_width=True):
-        os._exit(0)  # pylint: disable=protected-access
+        st.write(f"**{len(filtered)}** application(s) found.")
+        _render_csv_download(filtered)
+
+        total_pages = max(1, math.ceil(len(filtered) / PAGE_SIZE))
+        page_num = st.selectbox("Page", range(1, total_pages + 1), index=0)
+        page_apps = filtered[(page_num - 1) * PAGE_SIZE : page_num * PAGE_SIZE]
+        _render_table(page_apps)
 
 
-main()
+ViewApplicationsPage().run()

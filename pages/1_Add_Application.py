@@ -3,12 +3,12 @@
 # pylint: disable=duplicate-code  # Application() kwargs mirror 3_Edit_Application.py by design
 
 import datetime
-import os
 
 import streamlit as st
 
-from app.config import APP_ICON, APP_TITLE, DB_PATH
-from app.database import add_application, get_all, init_db
+from app.base_page import BasePage
+from app.config import DB_PATH
+from app.database import add_application, get_all
 from app.models import Application, Source, Status
 
 
@@ -86,21 +86,18 @@ def _show_confirm() -> None:
         st.rerun()
 
 
-def main() -> None:
-    """Render the Add Application page."""
-    st.set_page_config(page_title=f"Add Application — {APP_TITLE}", page_icon=APP_ICON)
-    init_db(DB_PATH)
-    st.title("Add Application")
+class AddApplicationPage(BasePage):
+    """Page for adding a new job application."""
 
-    if "pending_app" in st.session_state:
-        _show_confirm()
-    else:
-        _show_form()
+    subtitle = "Add Application"
 
-    with st.sidebar:
-        st.divider()
-        if st.button("Exit App", use_container_width=True):
-            os._exit(0)  # pylint: disable=protected-access
+    def _body(self) -> None:
+        st.title("Add Application")
+
+        if "pending_app" in st.session_state:
+            _show_confirm()
+        else:
+            _show_form()
 
 
-main()
+AddApplicationPage().run()
