@@ -21,6 +21,80 @@ A local-first job application tracking tool built with Streamlit and SQLite. Des
 
 ---
 
+## Using the App
+
+### Dashboard (Home)
+
+The home screen shows four KPI cards at a glance:
+
+| Card | What it shows |
+|---|---|
+| **Total Applications** | All-time count including archived |
+| **Active Pipeline** | Applications not yet archived (not Withdrawn / Not Selected) |
+| **Offers Received** | Count of Offer, Offer Accepted, and Offer Declined statuses |
+| **Response Rate** | % of applications that advanced past "Applied" |
+
+---
+
+### Adding an Application (`Add Application`)
+
+Fill in the form and click **Add Application**:
+
+- **Company** and **Job Title** are required
+- **Source** tracks where you found the role (LinkedIn, Indeed, Referral, etc.)
+- **Status** defaults to *Applied* — change it if you're logging a role you've already progressed in
+- **Job URL** and **Notes** are optional free-text fields
+
+**Duplicate detection:** If a record with the same company and job title already exists, the app pauses and shows the existing entries before inserting. You can add anyway (e.g. a re-application after time has passed) or cancel.
+
+---
+
+### Viewing & Filtering Applications (`View Applications`)
+
+The table shows all applications and supports sidebar filters:
+
+| Filter | Behaviour |
+|---|---|
+| **Show Archived** | Toggle to include Withdrawn / Not Selected records |
+| **Status** | Multi-select; defaults to active statuses only |
+| **Source** | Multi-select; defaults to all sources |
+| **From / To** | Date range applied on the `date_applied` field |
+
+Results are paginated (configurable via `PAGE_SIZE` in `.env`). Click **Export to CSV** to download the filtered set.
+
+Click **Edit** on any row to jump to the edit form for that record.
+
+---
+
+### Editing an Application (`Edit Application`)
+
+All fields are editable. The **archived** flag is managed automatically — saving a record with status *Not Selected* or *Withdrawn* marks it archived; all other statuses unarchive it.
+
+Click **Save** to persist changes, or **Cancel** to return to the list without saving.
+
+---
+
+### Reports (`Reports`)
+
+Three charts built from your data:
+
+| Chart | Scope | Description |
+|---|---|---|
+| **Applications per Week** | Filterable date range | Bar chart of weekly application volume |
+| **Status Breakdown** | Active applications only | Donut chart showing pipeline distribution |
+| **Source Breakdown** | All-time | Horizontal bar showing which sources produce the most applications |
+
+---
+
+### Switching Databases
+
+By default the app uses `demo.db` (committed with fictional data). To track real applications:
+
+1. Edit `.env` and set `DB_PATH=local.db` (or any filename — it will be created automatically)
+2. `local.db` is gitignored and stays on your machine only
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -39,6 +113,7 @@ A local-first job application tracking tool built with Streamlit and SQLite. Des
 ```
 job-tracker/
 ├── app/
+│   ├── base_page.py     # Abstract BasePage class (shared page setup)
 │   ├── config.py        # Typed constants loaded from .env
 │   ├── database.py      # All CRUD + dedup functions
 │   ├── models.py        # Application dataclass, Status/Source enums
@@ -50,7 +125,7 @@ job-tracker/
 │   └── 4_Reports.py
 ├── scripts/
 │   └── seed_demo.py     # Regenerates demo.db with fictional data
-├── tests/               # 61 tests, 100% coverage
+├── tests/               # 70 tests, 100% coverage
 ├── Home.py              # Dashboard entry point
 ├── demo.db              # Seeded demo database (committed)
 └── .github/workflows/
@@ -126,7 +201,7 @@ The `archived` flag is computed automatically — any application in `Not Select
 ## Testing
 
 ```
-61 tests across 4 modules
+70 tests across 5 modules
 100% line coverage enforced on every CI run
 pylint 10.0/10 on all source and test files
 ```
