@@ -25,6 +25,14 @@ _COL_HEADERS = [
 ]
 
 
+def _default_start_date() -> datetime.date:
+    """Return one week before the earliest application, or 2000-01-01 if none."""
+    all_apps = get_all(DB_PATH, include_archived=True)
+    if all_apps:
+        return min(a.date_applied for a in all_apps) - datetime.timedelta(days=7)
+    return datetime.date(2000, 1, 1)
+
+
 def _apply_filters(
     apps: list[Application],
     statuses: list[str],
@@ -105,11 +113,20 @@ class ViewApplicationsPage(BasePage):
         selected_sources = st.sidebar.multiselect(
             "Source", [s.value for s in Source], default=[s.value for s in Source]
         )
+
+        default_start = _default_start_date()
+
         start_date: datetime.date = st.sidebar.date_input(
-            "From", value=datetime.date(2000, 1, 1)
+            "From",
+            value=default_start,
+            min_value=default_start,
+            max_value=datetime.date.today(),
         )  # type: ignore[assignment]
         end_date: datetime.date = st.sidebar.date_input(
-            "To", value=datetime.date.today()
+            "To",
+            value=datetime.date.today(),
+            min_value=default_start,
+            max_value=datetime.date.today(),
         )  # type: ignore[assignment]
 
         all_apps = get_all(DB_PATH, include_archived=show_archived)
