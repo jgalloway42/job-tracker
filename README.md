@@ -14,6 +14,7 @@ A local-first job application tracking tool built with Streamlit and SQLite. Des
 - **Dashboard** — KPI cards for total applications, active pipeline, offers received, and response rate
 - **Add applications** — Form with duplicate detection; warns before inserting a record with the same company and job title
 - **View & filter** — Filter by date range, status, source, and archived state; paginated table with CSV export
+- **Search** — Full-text search across company name and job title; includes archived toggle and CSV export
 - **Edit applications** — Update any field; `archived` flag recomputes automatically from status
 - **Reports** — Weekly application trend (bar chart), status breakdown (donut), source breakdown (horizontal bar)
 - **Dedup CLI** — Interactive command-line tool to find and resolve duplicate records (`make dedup`)
@@ -74,6 +75,12 @@ Click **Save** to persist changes, or **Cancel** to return to the list without s
 
 ---
 
+### Searching Applications (`Search`)
+
+Type any term into the search box to find applications by company name or job title (case-insensitive substring match). Use the **Show Archived** toggle in the sidebar to include archived records. Results are paginated and exportable to CSV. Click **Edit** on any row to jump to that record's edit form.
+
+---
+
 ### Reports (`Reports`)
 
 Three charts built from your data:
@@ -117,15 +124,17 @@ job-tracker/
 │   ├── config.py        # Typed constants loaded from .env
 │   ├── database.py      # All CRUD + dedup functions
 │   ├── models.py        # Application dataclass, Status/Source enums
-│   └── reports.py       # DataFrame transforms for charts
+│   ├── reports.py       # DataFrame transforms for charts
+│   └── table_ui.py      # Shared table rendering and CSV export helpers
 ├── pages/
 │   ├── 1_Add_Application.py
 │   ├── 2_View_Applications.py
 │   ├── 3_Edit_Application.py
-│   └── 4_Reports.py
+│   ├── 4_Reports.py
+│   └── 5_Search.py
 ├── scripts/
 │   └── seed_demo.py     # Regenerates demo.db with fictional data
-├── tests/               # 70 tests, 100% coverage
+├── tests/               # 84 tests, 100% coverage
 ├── Home.py              # Dashboard entry point
 ├── demo.db              # Seeded demo database (committed)
 └── .github/workflows/
@@ -201,7 +210,7 @@ The `archived` flag is computed automatically — any application in `Not Select
 ## Testing
 
 ```
-70 tests across 5 modules
+84 tests across 6 modules
 100% line coverage enforced on every CI run
 pylint 10.0/10 on all source and test files
 ```
